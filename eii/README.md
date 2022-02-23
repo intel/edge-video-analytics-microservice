@@ -1,33 +1,31 @@
-EII DLStreamer Pipeline Server Microservice
-===========================================
+Edge Video Analytics Microservice for EII
+=========================================
 
-The EII DLStreamer Pipeline Server Microservice wraps the DLStreamer Pipeline Server
-library to provide an EII visual ingestion and analytics module utilizing the
-features and functionality of the library.
+The Edge Video Analytics Microservice combines the video ingestion and analytics
+capabilities provided by EII visual ingestion and analytics modules.
 
-## Building
+## Fetching EII source code
 
-The Docker container for this service cannot be built by itself. It must be
-built in the context of the EII multi-repo project. Follow the instructions
-[here](https://github.com/open-edge-insights/eii-manifests).
-
-Since the model files are large in size, they are not part of the repo.
-Download the required model files to be used for the pipeline mentioned in
-[config](./config.json) by referring https://github.com/dlstreamer/pipeline-server/tree/master/tools/model_downloader.
-Please ensure below pre-requisite steps are run to get the example pipelines
-working by referring https://github.com/dlstreamer/pipeline-server/blob/master/README.md
+Since the EII Edge Video Analytics Microservice depends on EII provisioning,
+it has to be built in EII context by fetching the EII source code.
+Please follow the steps mentioned below to fetch the EII source code
 
 ```sh
-./docker/build.sh
+repo init -u "https://github.com/open-edge-insights/eii-manifests.git"
 
-./docker/run.sh -v /tmp:/tmp
-
-./vaclient/vaclient.sh list-pipelines
+repo sync
 ```
+For more details, refer [here](https://github.com/open-edge-insights/eii-manifests).
 
 ## Running
 
-Please follow the steps mentioned below to run the DLStreamer Pipeline Server service
+Since the model files are large in size, they are not part of the repo.
+Download the required model files to be used for the pipeline mentioned in
+[config](./config.json) by following the steps mentioned in [README](../README.md#running-the-image)
+
+With the pre-requisite of provisioning the EII stack by referring to
+[README.md](https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision) done,
+please follow the steps mentioned below to run the Edge Video Analytics Microservice in EII context
 
 ```sh
 cd [WORK_DIR]/IEdgeInsights/build
@@ -45,18 +43,22 @@ sudo cp -r models /opt/intel/eii/
 docker-compose -f docker-compose-build.yml build
 
 # Start the docker containers
+docker-compose up -d ia_configmgr_agent # workaround for now, we are exploring on getting this and the sleep avoided
+sleep 30 # If any failures like configmgr data store client certs or msgbus certs failures, please increase this time to a higher value
 docker-compose up -d
 ```
 
-This repository provides the VA Serving pipeline needed for using a URI source
-and sending the ingested frames using the EII MsgBus Publisher. The commands above
-which create the, "models/", directory and the, "pipelines/", install needed
-directories for the service to run and install the VA Serving pipeline.
+This repository provides the Deep Learning Streamer(DL Streamer) pipelines needed
+for using a URI source and sending the ingested frames using the EII MsgBus Publisher.
+The commands above which create the, "models/", directory and the, "pipelines/",
+install needed directories for the Edge Video Analytics Microservice to run the
+DL Streamer pipelines.
 
 ## Configuration
 
-Please see the `config.json` file for the configuration of the service. The
-default configuration will start the object_detection demo for EII.
+Please see the [config](config.json) file for the configuration of the
+Edge Video Analytics Microservice. The default configuration will start the
+object_detection demo for EII.
 
 The table below describes each of the configuration attributes currently
 supported.
@@ -67,10 +69,10 @@ supported.
 | :-----------------: | -------------------------------------------------------------------------------------------------------------- |
 | `source`            | Source of the frames, must be `"gstreamer"` or `"msgbus"`.                                                    |
 | `source_parameters` | The parameters for the source element. The provided object is the typical parameters.                          |
-| `pipeline`          | The name of the VA Serving pipeline to use (should correspond to a directory in the pipelines directory).      |
+| `pipeline`          | The name of the DL Streamer pipeline to use (should correspond to a directory in the pipelines directory).      |
 | `pipeline_version`  | The version of the pipeline to use. This typically is a subdirectory of a pipeline in the pipelines directory. |
 | `publish_frame`     | Boolean flag for whether to publish the meta-data and the analyzed frame, or just the meta-data.               |
-| `model_parameters`  | Provides the parameters for the model if DL streamer is being used in the VA Serving pipeline.                 |
+| `model_parameters`  | Provides the parameters for the model used for inference.                 |
 
 ### Configuring the Interfaces
 
@@ -82,8 +84,8 @@ the structure of this.
 
 ### Configuring EII subscriber and publisher
 
-This service also supports subscribing and publishing messages/frames using the
-EIIMessageBus.
+The Edge Video Analytics Microservice also supports subscribing and publishing messages/frames
+using the EIIMessageBus.
 The endpoint details for the EII service you need to subscribe from is to be
 provided in the **Subscribers** section in [config](config.json) and the endpoints
 where you need to publish to are to be provided in **Publishers** section in
@@ -111,4 +113,3 @@ EIIMessageBus, please ensure the following changes are done:
                     ]
     }
 ```
-

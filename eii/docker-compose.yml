@@ -23,7 +23,7 @@ version: '3.6'
 services:
   ## Define DLStreamerPipelineServer service
   ia_dlstreamer_pipeline_server:
-    image: edge_video_analytics_microservice:0.7.0
+    image: intel/edge_video_analytics_microservice:0.7.0
     container_name: ia_dlstreamer_pipeline_server
     hostname: ia_dlstreamer_pipeline_server
     networks:
