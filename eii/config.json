@@ -14,14 +14,14 @@
     "interfaces": {
         "Publishers": [
             {
-                "Name": "AnalyticsResults",
-                "Type": "zmq_ipc",
-                "EndPoint": "/EII/sockets",
+                "Name": "default",
+                "Type": "zmq_tcp",
+                "EndPoint": "0.0.0.0:65114",
                 "Topics": [
-                    "camera1_stream_results"
+                    "edge_video_analytics_results"
                 ],
                 "AllowedClients": [
-                    "Visualizer", "WebVisualizer", "RestDataExport"
+                    "*"
                 ]
             }
         ],
