@@ -1,11 +1,11 @@
 {
 	"type": "GStreamer",
-	"template": ["uridecodebin name=source",
-				" ! gvadetect model={models[object_detection][person_detection][network]} name=detection",
-				" ! gvametaconvert name=metaconvert",
-				" ! appsink name=destination"
-			],
-	"description": "Person Detection based on person-detection-retial-0013",
+	"template": [
+		"uridecodebin name=source",
+		" ! gvadetect model={models[object_detection][person_detection][network]} name=detection",
+		" ! videoconvert ! video/x-raw,format=BGR ! appsink name=destination"
+	],
+	"description": "Person Detection based on person-detection-retail-0013",
 	"parameters": {
 		"type": "object",
 		"properties": {

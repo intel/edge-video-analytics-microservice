@@ -1,10 +1,10 @@
 {
 	"type": "GStreamer",
-	"template": ["uridecodebin name=source",
-				" ! gvadetect model={models[object_detection][person_vehicle_bike][network]} name=detection",
-				" ! gvametaconvert",
-                                " ! appsink name=destination"
-			],
+	"template": [
+		"uridecodebin name=source",
+		" ! gvadetect model={models[object_detection][person_vehicle_bike][network]} name=detection",
+		" ! videoconvert ! video/x-raw,format=BGR ! appsink name=destination"
+	],
 	"description": "Person Vehicle Bike Detection based on person-vehicle-bike-detection-crossroad-0078",
 	"parameters": {
 		"type": "object",
