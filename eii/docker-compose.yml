@@ -21,11 +21,11 @@
 version: '3.6'
 
 services:
-  ## Define DLStreamerPipelineServer service
-  ia_dlstreamer_pipeline_server:
+  ## Define EdgeVideoAnalyticsMicroservice service
+  ia_edge_video_analytics_microservice:
     image: intel/edge_video_analytics_microservice:0.7.0
-    container_name: ia_dlstreamer_pipeline_server
-    hostname: ia_dlstreamer_pipeline_server
+    container_name: ia_edge_video_analytics_microservice
+    hostname: ia_edge_video_analytics_microservice
     networks:
       - eii
     restart: unless-stopped
@@ -38,7 +38,7 @@ services:
     ports:
       - '65114:65114'
     environment:
-      AppName: "DLStreamerPipelineServer"
+      AppName: "EdgeVideoAnalyticsMicroservice"
       DEV_MODE: ${DEV_MODE}
       PROFILING_MODE: ${PROFILING_MODE}
       no_proxy: ${eii_no_proxy},${RTSP_CAMERA_IP},${ETCD_HOST}
@@ -59,15 +59,15 @@ services:
       GST_DEBUG: "1,gencamsrc:2"
 
       CONFIGMGR_CACERT: "/run/secrets/rootca/cacert.pem"
-      CONFIGMGR_KEY: "/run/secrets/DLStreamerPipelineServer/DLStreamerPipelineServer_client_key.pem"
-      CONFIGMGR_CERT: "/run/secrets/DLStreamerPipelineServer/DLStreamerPipelineServer_client_certificate.pem"
+      CONFIGMGR_KEY: "/run/secrets/EdgeVideoAnalyticsMicroservice/EdgeVideoAnalyticsMicroservice_client_key.pem"
+      CONFIGMGR_CERT: "/run/secrets/EdgeVideoAnalyticsMicroservice/EdgeVideoAnalyticsMicroservice_client_certificate.pem"
 
     volumes:
-      - ../DLStreamerPipelineServer/eii/pipelines:/app/pipelines/
+      - ../EdgeVideoAnalyticsMicroservice/eii/pipelines:/app/pipelines/
       - $EII_INSTALL_PATH/models:/app/models/
       - ${EII_INSTALL_PATH}/sockets:${SOCKET_DIR}
       - /var/tmp:/var/tmp
-      - ./Certificates/DLStreamerPipelineServer:/run/secrets/DLStreamerPipelineServer:ro
+      - ./Certificates/EdgeVideoAnalyticsMicroservice:/run/secrets/EdgeVideoAnalyticsMicroservice:ro
       - ./Certificates/rootca/cacert.pem:/run/secrets/rootca/cacert.pem:ro
       # Following devices under /dev filesystem will be needed based on usecase
       # dri - GPU
