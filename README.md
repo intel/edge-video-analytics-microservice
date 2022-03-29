@@ -1,53 +1,68 @@
-# Edge Video Analytics Microservice
+# Contents
 
-This repository contains the source code for Edge Video Analytics Microservice used for [Video Analytics Use Case](https://www.intel.com/content/www/us/en/developer/articles/technical/video-analytics-service.html). For information on how to build the use case, please refer to the [Get Started](https://www.intel.com/content/www/us/en/developer/articles/technical/video-analytics-service.html#inpage-nav-3) guide.
+- [Contents](#contents)
+	- [Edge Video Analytics Microservice](#edge-video-analytics-microservice)
+		- [Build the base image](#build-the-base-image)
+		- [Run the base image](#run-the-base-image)
+		- [Run EVAM in OEI mode](#run-evam-in-oei-mode)
 
+## Edge Video Analytics Microservice
 
-## Building the image 
+This repository contains the source code for Edge Video Analytics Microservice (EVAM) used for the [Video Analytics Use Case](https://www.intel.com/content/www/us/en/developer/articles/technical/video-analytics-service.html). For information on how to build the use case, refer to the [Get Started](https://www.intel.com/content/www/us/en/developer/articles/technical/video-analytics-service.html#inpage-nav-3) guide.
 
-- To build the base image, run the following command
+### Build the base image
+
+Complete the following steps to build the base image:
+
+1. Run the following command:
+  
+   ```sh
      `docker-compose -f  docker-compose-build.yml  build`
-     
-- You can download the pre-built container image for Edge Video Analytics Microservice from [Docker Hub](https://hub.docker.com/r/intel/edge_video_analytics_microservice)
+   ```
 
-## Running the image
+2. If required, download the pre-built container image for Edge Video Analytics Microservice from [Docker Hub](https://hub.docker.com/r/intel/edge_video_analytics_microservice).
 
+### Run the base image
 
-- Clone this repo.
+Complete the following steps to run the base image:
 
-- Make the following files executable
+1. Clone this [repo](https://github.com/intel/edge-video-analytics-microservice).
+2. Run the following command to make the following files executable:
 
-    `chmod +x tools/model_downloader/model_downloader.sh docker/run.sh`
+   ```sh
+    chmod +x tools/model_downloader/model_downloader.sh docker/run.sh
+   ```
 
-- Download the required models. From the cloned repo, run the following commands. 
+3. Download the required models. From the cloned repo, run the following command:
 
-    `./tools/model_downloader/model_downloader.sh  --model-list <Path to model-list.yml>`
+   ```sh
+   ./tools/model_downloader/model_downloader.sh  --model-list <Path to model-list.yml>
+   ```
 
-- After downloading the models, you will have models directory in the base folder.
+4. After downloading the models, you will have the `models` directory in the base folder. Refer to the following:
 
-```
-models/
-├── action_recognition
-├── audio_detection
-├── emotion_recognition
-├── face_detection_retail
-├── object_classification
-└── object_detection
-```
+   ```json
+    models/
+    ├── action_recognition
+    ├── audio_detection
+    ├── emotion_recognition
+    ├── face_detection_retail
+    ├── object_classification
+    └── object_detection
+   ```
 
-- Add the following lines in the docker-compose.yml environment if you are behind a proxy.
+5. Add the following lines in the `docker-compose.yml` environment if you are behind a proxy.
 
-```
+   ```sh
     - HTTP_PROXY=<IP>:<Port>/
     - HTTPS_PROXY=<IP>:<Port>/
     - NO_PROXY=localhost,127.0.0.1
-```
+   ```
 
-- Run `sudo docker-compose up`.
+6. Run the `sudo docker-compose up` command.
 
-- Please refer to [Run the Edge Video Analytics Microservice](https://www.intel.com/content/www/us/en/developer/articles/technical/video-analytics-service.html#inpage-nav-3-1) for more details.
+>**Note:** For more details, refer to [Run the Edge Video Analytics Microservice](https://www.intel.com/content/www/us/en/developer/articles/technical/video-analytics-service.html#inpage-nav-3-1).
 
+### Run EVAM in OEI mode
 
-## Running in EII mode
-
-- Please refer [README](eii/README.md) for running Edge Video Analytics Microservice in EII mode
+To run EVAM in the OEI mode, refer to the [README](eii/README.md).
