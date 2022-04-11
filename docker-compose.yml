@@ -52,6 +52,7 @@ services:
     volumes:
       - "./pipelines/:/app/pipelines/"
       - "./models:/app/models/"
+      - "./resources:/app/resources/"
     device_cgroup_rules:
     # Default run - device-cgroup-rule='c 189:* rmw'
     # NCS2 run - device-cgroup-rule='c 209:* rmw'
