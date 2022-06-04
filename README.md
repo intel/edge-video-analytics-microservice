@@ -1,16 +1,16 @@
 # Contents
 
 - [Contents](#contents)
-	- [Edge Video Analytics Microservice](#edge-video-analytics-microservice)
-		- [Build the base image](#build-the-base-image)
-		- [Run the base image](#run-the-base-image)
-		- [Run EVAM in OEI mode](#run-evam-in-oei-mode)
+  - [Edge Video Analytics Microservice](#edge-video-analytics-microservice)
+    - [Build the Base Image](#build-the-base-image)
+    - [Run the Base Image](#run-the-base-image)
+    - [Run EVAM in Open EII Mode](#run-evam-in-open-eii-mode)
 
 ## Edge Video Analytics Microservice
 
 This repository contains the source code for Edge Video Analytics Microservice (EVAM) used for the [Video Analytics Use Case](https://www.intel.com/content/www/us/en/developer/articles/technical/video-analytics-service.html). For information on how to build the use case, refer to the [Get Started](https://www.intel.com/content/www/us/en/developer/articles/technical/video-analytics-service.html#inpage-nav-3) guide.
 
-### Build the base image
+### Build the Base Image
 
 Complete the following steps to build the base image:
 
@@ -22,7 +22,7 @@ Complete the following steps to build the base image:
 
 2. If required, download the pre-built container image for Edge Video Analytics Microservice from [Docker Hub](https://hub.docker.com/r/intel/edge_video_analytics_microservice).
 
-### Run the base image
+### Run the Base Image
 
 Complete the following steps to run the base image:
 
@@ -63,6 +63,6 @@ Complete the following steps to run the base image:
 
 >**Note:** For more details, refer to [Run the Edge Video Analytics Microservice](https://www.intel.com/content/www/us/en/developer/articles/technical/video-analytics-service.html#inpage-nav-3-1).
 
-### Run EVAM in OEI mode
+### Run EVAM in Open EII Mode
 
-To run EVAM in the OEI mode, refer to the [README](eii/README.md).
+To run EVAM in the Open EII mode, refer to the [README](eii/README.md).
