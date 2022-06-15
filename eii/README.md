@@ -7,22 +7,22 @@
 		- [Config section](#config-section)
 		- [Interfaces section](#interfaces-section)
 
-## Edge Video Analytics Microservice for OEI
+## Edge Video Analytics Microservice for Open Edge Insights for Industrial
 
 The Edge Video Analytics Microservice (EVAM) combines video ingestion and analytics
-capabilities provided by Open Edge Insights (OEI) visual ingestion and analytics modules.
+capabilities provided by Open Edge Insights for Industrial (Open EII) visual ingestion and analytics modules.
 This directory provides the Intel® Deep Learning Streamer (Intel® DL Streamer) pipelines
 to perform object detection on an input URI source and send the ingested frames and
 inference results using the MsgBus Publisher. It also provides a Docker compose
 and config file to use EVAM with the Open Edge Insights software stack.
 
->**Note:** In this document, you will find labels of ‘Edge Insights for Industrial (EII)’ for filenames, paths, code snippets, and so on. Consider the references of EII as OEI. This is due to the product name change of EII as OEI.
+>**Note:** In this document, you will find labels of ‘Edge Insights for Industrial (EII)’ for file names, paths, code snippets, and so on. Consider the references of EII as Open EII. This is due to the product name change of EII as Open EII.
 
 ## Prerequisites
 
 As a prerequisite for EVAM, complete the following steps:
 
-1. Run the following commands to get the OEI source code:
+1. Run the following commands to get the Open EII source code:
 
    ```sh
     repo init -u "https://github.com/open-edge-insights/eii-manifests.git"
@@ -31,12 +31,11 @@ As a prerequisite for EVAM, complete the following steps:
 
    >**Note:** For more details, refer [here](https://github.com/open-edge-insights/eii-manifests).
 
-2. Complete the prerequisite for provisioning the OEI stack by referring to the
+2. Complete the prerequisite for provisioning the Open EII stack by referring to the
 [README.md](https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision).
 3. Download the required model files to be used for the pipeline mentioned in the [config](./config.json) file by completing step 2 to step 4 as mentioned in the [README](../README.md#running-the-image).
    >**Note:** The model files are large and hence they are not part of the repo.
-4. Run the following commands to set the environment, build the `ia_configmgr_agent` container
-and copy models to the required directory:
+4. Run the following commands to set the environment, build the `ia_configmgr_agent` container and copy models to the required directory:
 
    ```sh
    cd [WORK_DIR]/IEdgeInsights/build
@@ -51,9 +50,9 @@ and copy models to the required directory:
    sudo cp -r [downloaded_model_directory]/models /opt/intel/eii/
    ```
 
-## Run the containers
+## Run the Containers
 
-To pull the prebuilt OEI container images and EVAM from Docker Hub and run the containers in the detached mode, run the following command:
+To pull the prebuilt Open EII container images and EVAM from Docker Hub and run the containers in the detached mode, run the following command:
 
 ```sh
 # Start the docker containers
@@ -68,7 +67,7 @@ docker-compose up -d
 ## Configuration
 
 See the [edge-video-analytics-microservice/eii/config.json](config.json) file for the configuration of EVAM. The default configuration will start the
-object_detection demo for OEI.
+object_detection demo for Open EII.
 
 The config file is divided into two sections as follows:
 
@@ -86,18 +85,15 @@ The following table describes the attributes that are supported in the `config` 
 | `publish_frame`     | The Boolean flag for whether to publish the metadata and the analyzed frame, or just the metadata.             |
 | `model_parameters`  | This provides the parameters for the model used for inference.                 |
 
-### Interfaces section
+### Interfaces Section
 
-In the OEI mode, currently EVAM only supports launching a single pipeline and publishing on a single topic. This implies that in the configuration file ("config.json"),
-the single JSON object in the `Publisher` list is where the configuration resides for the published data. For more details on the structure, refer to the [OEI documentation](https://github.com/open-edge-insights/eii-core/blob/master/README.md#add-oei-services).
+Currently in the Open EII mode, EVAM supports launching a single pipeline and publishing on a single topic. This implies that in the configuration file ("config.json"), the single JSON object in the `Publisher` list is where the configuration resides for the published data. For more details on the structure, refer to the [Open EII documentation](https://github.com/open-edge-insights/eii-core/blob/master/README.md#add-oei-services).
 
-EVAM also supports subscribing and publishing messages or frames using the Message Bus. The endpoint details for the OEI service you need to subscribe from are to be
-provided in the **Subscribers** section in the [config](config.json) file and the endpoints where you need to publish to are to be provided in **Publishers** section in
-the [config](config.json) file.
+EVAM also supports subscribing and publishing messages or frames using the Message Bus. The endpoint details for the Open EII service you need to subscribe from are to be provided in the **Subscribers** section in the [config](config.json) file and the endpoints where you need to publish to are to be provided in **Publishers** section in the [config](config.json) file.
 
 To enable injection of frames into the GStreamer pipeline obtained from Message Bus, ensure to make the following changes:
 
-- The source parameter in the [config](config.json) file is set to msgbus
+- The source parameter in the [config](config.json) file is set to msgbus. Refer to the following code snippet:
 
   ```javascript
      "config": {
@@ -105,7 +101,7 @@ To enable injection of frames into the GStreamer pipeline obtained from Message 
      }
   ```
 
-- The template of respective pipeline is set to appsrc as source instead of uridecodebin
+- The template of respective pipeline is set to appsrc as source instead of uridecodebin. Refer to the following code snippet:
 
   ```javascript
       {
