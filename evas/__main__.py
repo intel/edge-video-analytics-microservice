@@ -52,7 +52,7 @@ if __name__ == '__main__':
     log = get_logger(__name__)
 
     log.info('Initializing EVAS manager')
-    manager = EvasManager(cfg_mgr)
+    manager = EvasManager(cfg_mgr, cfg_mgr.get_num_publishers(), cfg_mgr.get_num_subscribers())
 
     try:
         log.info('Running forever...')

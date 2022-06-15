@@ -23,6 +23,7 @@
 """
 import json
 import queue
+import threading
 import cfgmgr.config_manager as cfg
 from evas.publisher import EvasPublisher
 from evas.subscriber import EvasSubscriber
@@ -43,10 +44,12 @@ class EvasManager:
     publisher and subscriber, the EII Message Bus request/response server for
     handling commands, and the launch/stopping of pipeline in VA Serving.
     """
-    def __init__(self, cfg_mgr):
+    def __init__(self, cfg_mgr, num_publishers, num_subscribers):
         """Constructor
 
         :param cfgmgr.config_manager.ConfigMgr cfg_mgr: EII config manager
+        :param int num_publishers: Number of publishers
+        :param int num_subscribers: Number of subscribers
         """
         global CONFIG_LOC
 
@@ -57,11 +60,7 @@ class EvasManager:
         self.app_cfg = self.cfg.get_app_config().get_dict()
         self.log.debug(f'EVAS Serving Config: {self.app_cfg}')
 
-        # Input and output queues
-        self.output_queue = queue.Queue()
-        self.input_queue = None
-
-        model_params = {}
+        self.model_params = {}
 
         if 'udfs' in self.app_cfg:
             self.log.info(f'Config specified UDFs, saving to {CONFIG_LOC}')
@@ -71,29 +70,45 @@ class EvasManager:
             with open(CONFIG_LOC, 'w') as f:
                 json.dump(udfs, f)
 
-            model_params['config'] = CONFIG_LOC
+            self.model_params['config'] = CONFIG_LOC
+
+        self.output_queue, self.input_queue = [], []
+        self.publisher, self.subscriber = [], []
+        self.pipeline = []
+
+        for i in range(num_publishers):
+            thread = threading.Thread(target=self.start_va_serving_instance,
+                                    args=(i,))
+            thread.start()
+
+    def start_va_serving_instance(self, index):
+        """Start each instance of EVAS service
+        """
+        # Input and output queues
+        self.output_queue[index] = queue.Queue()
+        self.input_queue[index] = None
 
         if self.app_cfg['source'] == 'msgbus':
-            self.input_queue = queue.Queue()
+            self.input_queue[index] = queue.Queue()
             self.log.debug('Initializing EVAS subscriber')
             if self.cfg.get_num_subscribers != -1:
                 sub_cfg = self.cfg.get_subscriber_by_index(0)
                 self.log.debug('Getting EVAS subscriber configuration')
-                self.subscriber = EvasSubscriber(sub_cfg, self.input_queue)
-                self.subscriber.start()
+                self.subscriber[index] = EvasSubscriber(sub_cfg, self.input_queue[index])
+                self.subscriber[index].start()
         elif self.app_cfg['source'] != 'gstreamer':
             raise RuntimeError(f'Unsupported source: {self.app_cfg["source"]}')
         else:
-            self.subscriber = None
+            self.subscriber[index] = None
 
         self.log.debug('Getting EVAS publisher configuration')
-        pub_cfg = self.cfg.get_publisher_by_index(0)
+        pub_cfg = self.cfg.get_publisher_by_index(index)
 
         self.log.debug('Initializing EVAS publisher')
         pub_frame = self.app_cfg.get('publish_frame', False)
-        self.publisher = EvasPublisher(self.app_cfg, pub_cfg,
-                                       self.output_queue, pub_frame)
-        self.publisher.start()
+        self.publisher[index] = EvasPublisher(self.app_cfg, pub_cfg,
+                                       self.output_queue[index], pub_frame)
+        self.publisher[index].start()
 
         self.log.info('Starting VA Serving')
         VAServing.start({
@@ -105,12 +120,12 @@ class EvasManager:
         # Questions:
         # - What if I wanted to use a model, but switch out a URI source with
         #       say a GigE vision camera? New pipeline? Is there an easier way?
-        if self.subscriber:
+        if self.subscriber[index]:
             del self.app_cfg['source_parameters']['uri']
             self.app_cfg['source_parameters'] = {
                 "type": "application",
                 "class": "GStreamerAppSource",
-                "input": self.input_queue,
+                "input": self.input_queue[index],
             }
         src = self.app_cfg['source_parameters']
         self.log.info("App_cfg {}".format(self.app_cfg))
@@ -118,34 +133,36 @@ class EvasManager:
             'metadata': {
                 'type': 'application',
                 'class': 'GStreamerAppDestination',
-                'output': self.output_queue,
+                'output': self.output_queue[index],
                 'mode': 'frames'  # TODO: Should this be something else? options?
             }
         }
 
         if 'model_parameters' in self.app_cfg:
-            model_params.update(self.app_cfg['model_parameters'])
+            self.model_params.update(self.app_cfg['model_parameters'])
         pipeline = self.app_cfg['pipeline']
         pipeline_version = self.app_cfg['pipeline_version']
 
         self.log.info(
                 f'Creating VA serving pipeline {pipeline}/{pipeline_version}')
-        self.pipeline = VAServing.pipeline(pipeline, pipeline_version)
-        if self.pipeline is None:
+        self.pipeline[index] = VAServing.pipeline(pipeline, pipeline_version)
+        if self.pipeline[index] is None:
             raise RuntimeError('Failed to initialize VA Serving pipeline')
 
         self.log.info('Starting VA serving pipeline {} {}'.format(src, dest))
-        self.pipeline.start(source=src,
-                            destination=dest,
-                            parameters=model_params)
+        self.pipeline[index].start(source=src,
+                                   destination=dest,
+                                   parameters=self.model_params)
 
     def stop(self):
         """Stop the EVAS service.
         """
         VAServing.stop()
-        self.publisher.stop()
-        if self.subscriber is not None:
-            self.subscriber.stop()
+        for publisher in self.publisher:
+            publisher.stop()
+        for subscriber in self.subscriber:
+            if subscriber is not None:
+                subscriber.stop()
 
     def run_forever(self):
         """Start the EVAS service and run forever.
