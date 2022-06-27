@@ -9,12 +9,19 @@
 	"parameters": {
 		"type": "object",
 		"properties": {
+			"detection-properties": {
+				"element": {
+					"name": "detection",
+					"format": "element-properties"
+				}
+			},
 			"detection-device": {
 				"element": {
 					"name": "detection",
 					"property": "device"
 				},
-				"type": "string"
+				"type": "string",
+				"default": "{env[DETECTION_DEVICE]}"
 			},
 			"detection-model-instance-id": {
 				"element": {

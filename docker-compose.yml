@@ -34,7 +34,7 @@ services:
       - app_network
 
   edge_video_analytics_microservice:
-    image: intel/edge_video_analytics_microservice:0.7.0
+    image: intel/edge_video_analytics_microservice:0.7.2
     hostname: edge_video_analytics_microservice
     container_name: edge_video_analytics_microservice
     privileged: true
@@ -48,11 +48,19 @@ services:
     environment:
       - ENABLE_RTSP=true
       - RTSP_PORT=8554
+      - ENABLE_WEBRTC=true
+      - WEBRTC_SIGNALING_SERVER=ws://localhost:8443
+      - no_proxy=$no_proxy
+      - http_proxy=$http_proxy
+      - https_proxy=$https_proxy
       - RUN_MODE=EVA
+      # Default Detection and Classification Device
+      - DETECTION_DEVICE=CPU
+      - CLASSIFICATION_DEVICE=CPU
     volumes:
-      - "./pipelines/:/app/pipelines/"
-      - "./models:/app/models/"
-      - "./resources:/app/resources/"
+      - "./pipelines/:/home/pipeline-server/pipelines/"
+      - "./models:/home/pipeline-server/models/"
+      - "./resources:/home/pipeline-server/resources/"
     device_cgroup_rules:
     # Default run - device-cgroup-rule='c 189:* rmw'
     # NCS2 run - device-cgroup-rule='c 209:* rmw'

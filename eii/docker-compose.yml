@@ -23,7 +23,7 @@ version: '3.6'
 services:
   ## Define EdgeVideoAnalyticsMicroservice service
   ia_edge_video_analytics_microservice:
-    image: intel/edge_video_analytics_microservice:0.7.0
+    image: intel/edge_video_analytics_microservice:0.7.2
     container_name: ia_edge_video_analytics_microservice
     hostname: ia_edge_video_analytics_microservice
     networks:
@@ -63,8 +63,8 @@ services:
       CONFIGMGR_CERT: "/run/secrets/EdgeVideoAnalyticsMicroservice/EdgeVideoAnalyticsMicroservice_client_certificate.pem"
 
     volumes:
-      - ../EdgeVideoAnalyticsMicroservice/eii/pipelines:/app/pipelines/
-      - $EII_INSTALL_PATH/models:/app/models/
+      - ../EdgeVideoAnalyticsMicroservice/eii/pipelines:/home/pipeline-server/pipelines/
+      - $EII_INSTALL_PATH/models:/home/pipeline-server/models/
       - ${EII_INSTALL_PATH}/sockets:${SOCKET_DIR}
       - /var/tmp:/var/tmp
       - ./Certificates/EdgeVideoAnalyticsMicroservice:/run/secrets/EdgeVideoAnalyticsMicroservice:ro

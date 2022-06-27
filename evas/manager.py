@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""EII VA Serving Service manager.
+"""EII Pipeline Server Service manager.
 """
 import json
 import queue
@@ -27,8 +27,8 @@ import cfgmgr.config_manager as cfg
 from evas.publisher import EvasPublisher
 from evas.subscriber import EvasSubscriber
 from evas.log import get_logger, LOG_LEVEL
-from vaserving.gstreamer_app_source import GvaFrameData
-from vaserving.vaserving import VAServing
+from server.gstreamer_app_source import GvaFrameData
+from server.pipeline_server import PipelineServer
 
 
 # Global location for where to save the UDFs configuration file (if needed)
@@ -36,13 +36,14 @@ CONFIG_LOC = '/tmp/config.json'
 
 
 class EvasManager:
-    """EII Video Analytiocs Serving service manager.
+    """EII Pipeline server service manager.
 
     This manager is responsible for managing the entire runtime setup and
     behaivior of the service. This includes managing the EII Message Bus
     publisher and subscriber, the EII Message Bus request/response server for
-    handling commands, and the launch/stopping of pipeline in VA Serving.
+    handling commands, and the launch/stopping of pipeline in Pipeline Server.
     """
+
     def __init__(self, cfg_mgr):
         """Constructor
 
@@ -95,8 +96,8 @@ class EvasManager:
                                        self.output_queue, pub_frame)
         self.publisher.start()
 
-        self.log.info('Starting VA Serving')
-        VAServing.start({
+        self.log.info('Starting Pipeline Server')
+        PipelineServer.start({
             'log_level': LOG_LEVEL,
             'ignore_init_errors': True
         })
@@ -129,12 +130,12 @@ class EvasManager:
         pipeline_version = self.app_cfg['pipeline_version']
 
         self.log.info(
-                f'Creating VA serving pipeline {pipeline}/{pipeline_version}')
-        self.pipeline = VAServing.pipeline(pipeline, pipeline_version)
+            f'Creating Pipeline Server pipeline {pipeline}/{pipeline_version}')
+        self.pipeline = PipelineServer.pipeline(pipeline, pipeline_version)
         if self.pipeline is None:
-            raise RuntimeError('Failed to initialize VA Serving pipeline')
+            raise RuntimeError('Failed to initialize Pipeline Server pipeline')
 
-        self.log.info('Starting VA serving pipeline {} {}'.format(src, dest))
+        self.log.info('Starting Pipeline Server pipeline {} {}'.format(src, dest))
         self.pipeline.start(source=src,
                             destination=dest,
                             parameters=model_params)
@@ -142,7 +143,7 @@ class EvasManager:
     def stop(self):
         """Stop the EVAS service.
         """
-        VAServing.stop()
+        PipelineServer.stop()
         self.publisher.stop()
         if self.subscriber is not None:
             self.subscriber.stop()
@@ -151,7 +152,7 @@ class EvasManager:
         """Start the EVAS service and run forever.
         """
         self.log.debug('Running forever...')
-        VAServing.wait()
+        PipelineServer.wait()
 
     def _config_update_callback(self):
         """Private method for handling configuration changes reported by the

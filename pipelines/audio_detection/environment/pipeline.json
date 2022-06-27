@@ -14,7 +14,8 @@
 		"properties": {
 			"device": {
 				"element": "detection",
-				"type": "string"
+				"type": "string",
+				"default": "{env[DETECTION_DEVICE]}"
 			},
 			"bus-messages": {
 				"description": "Prints GstBus messages as logger info",
@@ -38,6 +39,12 @@
 			"post-messages": {
 				"element": "level",
 				"type": "boolean"
+			},
+			"detection-properties": {
+				"element": {
+					"name": "detection",
+					"format": "element-properties"
+				}
 			}
 		}
 	}

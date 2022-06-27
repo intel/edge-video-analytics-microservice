@@ -4,10 +4,10 @@
 The model downloader downloads and prepares models from the
 OpenVINO<sup>&#8482;</sup> Toolkit [Open Model
 Zoo](https://github.com/openvinotoolkit/open_model_zoo) for use with
-Video Analytics Serving. It can be run as a standalone tool or as
-part of the Video Analytics Serving build process. For more
+Intel(R) Deep Learning Streamer (Intel(R) DL Streamer) Pipeline Server. It can be run as a standalone tool or as
+part of the Pipeline Server build process. For more
 information on model file formats and the directory structure used by
-Video Analytics Serving see [defining_pipelines](/docs/defining_pipelines.md#deep-learning-models).
+Intel(R) DL Streamer Pipeline Server see [defining_pipelines](/docs/defining_pipelines.md#deep-learning-models).
 
 # Specifying Models
 
@@ -37,36 +37,40 @@ more optional properties (alias, version, precision, local
 model-proc). If an optional property is not specified the downloader
 will use [default values](#default-values).
 
+> Note: Models can have a separate file that contains labels.
+
 Example:
 
 ```yaml
 - model: yolo-v3-tf
   alias: object_detection
   version: 2
-  precision: [FP32,INT8]
+  precision: [FP32]
   model-proc: object_detection.json
+  labels: coco.txt
 ```
+
+The `model-proc` and `labels` entries above can be set if a local override is desired.
+In that case, the corresponding files are expected to be in the same directory as the models.list.yml specified.
 
 ## Default Values
 
 * alias = model_name
 * version = 1
 * precision = all available precisions
-* model-proc = model_name.json
+* model-proc = <model_name>.json
+* labels = <filename>.txt
 
-If a local model-proc is not specified, the tool will download the
-corresponding model-proc file from the DL streamer repository (if one
-exists).
-
+If a local model-proc and/or labels file(s) are not specified, the tool will use the model-proc and/or labels file that is part of the Intel(R) DL Streamer developer image.
 
 # Downloading Models
 
 The model downloader can be run either as a standalone tool or as part
-of the Video Analytics Serving build process.
+of the Intel(R) DL Streamer Pipeline Server build process.
 
-## Downloading Models as part of Video Analytics Serving Build
+## Downloading Models as part of Intel(R) DL Streamer Pipeline Server Build
 
-The Video Analytics Serving build script downloads models listed in a
+The Intel(R) DL Streamer Pipeline Server build script downloads models listed in a
 yaml file that can be specified via the `--models` argument.
 
 Example:
@@ -93,6 +97,6 @@ usage: model_downloader.sh
   [--output absolute path where to save models]
   [--model-list input file with model names and properties]
   [--force force download and conversion of existing models]
-  [--open-model-zoo-version specify the version of openvino image to be used for downloading models from Open Model Zoo]
+  [--open-model-zoo-version specify the version of OpenVINO(TM) image to be used for downloading models from Open Model Zoo]
   [--dry-run print commands without executing]
 ```

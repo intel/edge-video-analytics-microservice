@@ -9,19 +9,33 @@
 	"parameters": {
 		"type": "object",
 		"properties": {
+			"classification-properties": {
+				"element": {
+					"name": "classification",
+					"format": "element-properties"
+				}
+			},
+			"detection-properties": {
+				"element": {
+					"name": "detection",
+					"format": "element-properties"
+				}
+			},
 			"detection-device": {
 				"element": {
 					"name": "detection",
 					"property": "device"
 				},
-				"type": "string"
+				"type": "string",
+				"default": "{env[DETECTION_DEVICE]}"
 			},
 			"classification-device": {
 				"element": {
 					"name": "classification",
 					"property": "device"
 				},
-				"type": "string"
+				"type": "string",
+				"default": "{env[CLASSIFICATION_DEVICE]}"
 			},
 			"inference-interval": {
 				"element":

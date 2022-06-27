@@ -23,55 +23,16 @@
 version: "3"
 services:
   edge_video_analytics_microservice:
-    image: intel/edge_video_analytics_microservice:0.7.0
+    image: intel/edge_video_analytics_microservice:0.7.2
     hostname: edge_video_analytics_microservice
     container_name: edge_video_analytics_microservice
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        EII_VERSION: "v2.6.1"
+        EII_VERSION: "3.0"
         EII_UID: 1999
-        EII_USER_NAME: "eiiuser"
+        USER: "eiiuser"
         EII_SOCKET_DIR: "/opt/intel/eii/sockets"
-        CONFIGMGR_CACERT: "/run/secrets/rootca/cacert.pem"
-        CONFIGMGR_KEY: "/run/secrets/VideoAnalyticsServing/VideoAnalyticsServing_client_key.pem"
-        CONFIGMGR_CERT: "/run/secrets/VideoAnalyticsServing/VideoAnalyticsServing_client_certificate.pem"
-        BASE_IMAGE: "openvino/ubuntu20_data_runtime:2021.4.2"
-        VA_SERVING_VERSION: "v0.7.0-beta"
-        # set CMAKE_BUILD_TYPE value to "Debug" to generate debug symbols
-        CMAKE_BUILD_TYPE: "Debug"
-        CMAKE_INSTALL_PREFIX: "/usr/local"
-        RUN_TESTS: "OFF"
-    privileged: true
-    tty: true
-    entrypoint: ["./run.sh"]
-    ports:
-      - '8080:8080'
-      - '8554:8554'
-    networks:
-      - app_network
-    environment:
-      - ENABLE_RTSP=true
-      - RTSP_PORT=8554
-      - RUN_MODE=EVA
-    volumes:
-      - "./pipelines/:/app/pipelines/"
-      - "./models:/app/models/"
-    device_cgroup_rules:
-    # Default run - device-cgroup-rule='c 189:* rmw'
-    # NCS2 run - device-cgroup-rule='c 209:* rmw'
-    # Selective rules can be applied for deployment
-    - 'c 189:* rmw'
-    - 'c 209:* rmw'
-    devices:
-    # Following devices under /dev filesystem will be needed based on usecase
-    # dri - GPU
-    # ion - VPU
-    # USB camera devices
-    # Selective mount can be done for deployment as mounting whole /dev is not recommended
-    - "/dev:/dev"
-
-networks:
-  app_network:
-    driver: "bridge"
+        BASE_IMAGE: "intel/dlstreamer-pipeline-server:2022.1.1-ubuntu20"
+        PKG_SRC: "https://github.com/open-edge-insights/eii-manifests/releases/download/v3.0"

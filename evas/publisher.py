@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""EII VA Serving results publisher.
+"""EII Pipeline Server results publisher.
 """
 import gi
 
@@ -34,13 +34,13 @@ import threading as th
 import numpy as np
 from gi.repository import Gst
 from gstgva.util import gst_buffer_data
-from vaserving.gstreamer_app_source import GvaFrameData
+from server.gstreamer_app_source import GvaFrameData
 import eii.msgbus as emb
 from evas.log import get_logger
 
 
 class EvasPublisher:
-    """EII VA Serving publisher thread.
+    """EII Pipeline Server publisher thread.
     """
     def __init__(self, app_cfg, pub_cfg, queue, publish_frame=True):
         """Constructor

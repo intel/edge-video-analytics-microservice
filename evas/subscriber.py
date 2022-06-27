@@ -19,26 +19,27 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""EII VA Serving subscriber.
+"""EII Pipeline Server subscriber.
 """
+from evas.log import get_logger
+import eii.msgbus as emb
+from server.gstreamer_app_source import GvaFrameData
+from gstgva.util import gst_buffer_data
+from gi.repository import Gst
+import threading as th
+import time
+import queue
+import json
 import gi
 
 gi.require_version('Gst', '1.0')
 # pylint: disable=wrong-import-position
-import json
-import queue
-import time
-import threading as th
-from gi.repository import Gst
-from gstgva.util import gst_buffer_data
-from vaserving.gstreamer_app_source import GvaFrameData
-import eii.msgbus as emb
-from evas.log import get_logger
 
 
 class EvasSubscriber:
-    """EII VA Serving subscriber thread.
+    """EII Pipeline Server subscriber thread.
     """
+
     def __init__(self, sub_cfg, queue):
         """Constructor
 

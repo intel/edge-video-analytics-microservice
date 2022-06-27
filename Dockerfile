@@ -22,138 +22,63 @@
 # Specify all Docker arguments for the Dockerfile
 
 ARG BASE_IMAGE
-ARG CMAKE_BUILD_TYPE="Release"
-ARG RUN_TESTS="OFF"
-
 FROM ${BASE_IMAGE} AS builder
-
 LABEL description="Edge Video Analytics Microservice"
-ARG EII_USER_NAME
+
 USER root
-WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    make=4.2.1-1.2 \
-    wget=1.20.3-1ubuntu2 \
-    git && \
-    rm -rf /var/lib/apt/lists/*
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Install VA Serving
-ARG VA_SERVING_VERSION
-RUN git clone https://github.com/intel/video-analytics-serving.git \
-    --branch ${VA_SERVING_VERSION} \
-    --single-branch /app && rm -rf .git
+WORKDIR /home/pipeline-server
+RUN apt-get update && apt-get install -y --no-install-recommends git
 
 ARG EII_VERSION
-
-RUN git clone https://github.com/open-edge-insights/eii-c-utils.git \
-    --branch ${EII_VERSION} --single-branch 
-
 RUN git clone https://github.com/open-edge-insights/eii-core.git \
-    --branch ${EII_VERSION} --single-branch 
+    --branch v${EII_VERSION} --single-branch
 
-RUN git clone https://github.com/open-edge-insights/eii-messagebus.git \
-    --branch ${EII_VERSION} --single-branch
-
-ARG CMAKE_INSTALL_PREFIX="/usr/local"
-
-ARG EIIMessageBus="./eii-messagebus"
-ARG ConfigMgr="./eii-core/common/libs/ConfigMgr"
-ARG EIICutils="./eii-c-utils"
-
-RUN wget -O- https://cmake.org/files/v3.15/cmake-3.15.0-Linux-x86_64.tar.gz | \
-        tar --strip-components=1 -xz -C /usr/local
-
-RUN cd ${ConfigMgr} && rm -rf deps && ./install.sh
-ARG INSTALL_PATH=${CMAKE_INSTALL_PREFIX}/lib
-
-RUN cd ${EIIMessageBus} && rm -rf deps  && ./install.sh --cython
-
-RUN cd ${EIICutils} && \
-   ./install.sh && \
-   rm -rf build && \
-   mkdir build && \
-   cd build && \
-   cmake -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_PREFIX}/include -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DWITH_TESTS=${RUN_TESTS} -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE .. && \
-   make && \
-   if [ "${RUN_TESTS}" = "ON" ] ; then cd ./tests  && \
-   ./config-tests  \
-   ./log-tests \
-   ./thp-tests \
-   ./tsp-tests \
-   ./thexec-tests \
-   cd .. ; fi  && \
-   make install
-
-RUN pip3 install --user -r ${EIIMessageBus}/python/requirements.txt
-
-RUN cd ${EIIMessageBus} && \
-    rm -rf build/ && \
-    mkdir build/ && \
-    cd build/ && \
-    cmake  -DWITH_TESTS=${RUN_TESTS} -DWITH_TESTS=${RUN_TESTS} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} .. && \
-    make install
-
-RUN cd ${EIIMessageBus}/python && python3 setup.py install --user
-
-RUN cd ${ConfigMgr} && \
-   # Installing grpc from DEB package
-   apt install ./grpc-1.29.0-Linux.deb && \
-   rm -rf build && \
-   mkdir build && \
-   cd build && \
-   cmake  -DWITH_TESTS=${RUN_TESTS} -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE .. && \
-   make install
-
-RUN cd ${ConfigMgr}/python && \
-   python3 setup.py.in install --user
-
-# Runtime image
+# Build the runtime image
 FROM ${BASE_IMAGE} AS runtime
 
 USER root
 
-WORKDIR /app
+WORKDIR /home/pipeline-server
 
-ARG EII_USER_NAME
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN mkdir -p .local/lib
-COPY --from=builder /app/requirements.service.txt .
-COPY --from=builder /app/requirements.txt .
-COPY --from=builder /app/vaserving /app/vaserving
-COPY --from=builder /app/eii-core/common /app/common
-COPY --from=builder /root/.local/lib .local/lib
-COPY --from=builder /usr/local/lib/lib* /usr/local/lib/
+RUN apt-get update && apt-get install -y libcjson-dev
+
+COPY ./run.sh /home/pipeline-server
+COPY ./evas/ /home/pipeline-server/evas
+RUN chmod a+x run.sh
+COPY --from=builder /home/pipeline-server/eii-core/common/util/*.py util/
+
+ARG PKG_SRC
+ARG EII_VERSION
+RUN wget ${PKG_SRC}/eii-utils-${EII_VERSION}.0-Linux.deb && \
+    wget ${PKG_SRC}/eii-messagebus-${EII_VERSION}.0-Linux.deb && \
+    wget ${PKG_SRC}/eii-configmanager-${EII_VERSION}.0-Linux.deb && \
+    dpkg -i /home/pipeline-server/eii-utils-${EII_VERSION}.0-Linux.deb && \
+    dpkg -i /home/pipeline-server/eii-messagebus-${EII_VERSION}.0-Linux.deb && \
+    dpkg -i /home/pipeline-server/eii-configmanager-${EII_VERSION}.0-Linux.deb && \
+    rm -rf eii-*.deb
+
+RUN pip3 install --no-cache-dir eii-messagebus==${EII_VERSION} eii-configmanager==${EII_VERSION}
 
 ARG EII_UID
+ARG USER
 
-RUN useradd -r -u ${EII_UID} -G users,video,audio ${EII_USER_NAME}
+RUN useradd -ms /bin/bash -G video,audio,users ${USER} -u $EII_UID && \
+    chown ${USER}:${USER} -R /home/pipeline-server /root
 
-ENV LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib/udfs
-ENV LD_LIBRARY_PATH=/opt/intel/openvino/data_processing/dl_streamer/lib:/usr/local/lib/udfs:/usr/local/lib:$LD_LIBRARY_PATH
-ENV CPLUS_INCLUDE_PATH=/opt/intel/openvino/data_processing/dl_streamer/include/gst/videoanalytics:/opt/intel/openvino/data_processing/dl_streamer/include/gst/videoanalytics/metadata
-ENV PYTHONPATH=/usr/local/lib/:/EII:/app/common/libs/UDFLoader/build/:/app/common/video/udfs/python:/app/common/:${CMAKE_INSTALL_PREFIX}/lib
-ENV PYTHONPATH ${PYTHONPATH}:/app/common/video/udfs/python:/app/common/:/app:/app/.local/lib/python3.8/site-packages:/root/.local/lib/python3.8/site-packages/:/app/common
-
-# Copy over service code and install dependencies
-COPY ./run.sh /app
-
-COPY ./evas/ /app/evas
-
-RUN pip3 install  --no-cache-dir -r /app/requirements.txt && \
-    pip3 install  --no-cache-dir -r /app/requirements.service.txt && \
-    rm -rf /app/requirements*.txt
-
-RUN pip3 install markupsafe==2.0.1
 ARG EII_SOCKET_DIR
-RUN mkdir -p /home/${EII_USER_NAME}/ && chown -R ${EII_USER_NAME}:${EII_USER_NAME} /home/${EII_USER_NAME} && \
-    mkdir -p ${EII_SOCKET_DIR} && chown -R ${EII_USER_NAME}:${EII_USER_NAME} $EII_SOCKET_DIR 
-RUN chown ${EII_USER_NAME}:${EII_USER_NAME} /app /var/tmp
-RUN chown -R ${EII_UID} .local/lib
+RUN mkdir -p /home/${USER}/ && chown -R ${USER}:${USER} /home/${USER} && \
+    mkdir -p ${EII_SOCKET_DIR} && chown -R ${USER}:${USER} $EII_SOCKET_DIR
+
+ENV cl_cache_dir=/home/.cl_cache
+RUN mkdir -p -m g+s $cl_cache_dir && chown ${USER}:users $cl_cache_dir
 ENV XDG_RUNTIME_DIR=/home/.xdg_runtime_dir
 RUN mkdir -p -m g+s $XDG_RUNTIME_DIR && chown ${USER}:users $XDG_RUNTIME_DIR
-RUN usermod -a -G users ${EII_USER_NAME}
-ENV PYTHONPATH ${PYTHONPATH}:.local/lib
+ENV LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/usr/local/lib:/home/pipeline-server
+USER $USER
 
-USER $EII_USER_NAME
-ENTRYPOINT ["./run.sh"] 
+ENTRYPOINT ["./run.sh"]
