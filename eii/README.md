@@ -54,7 +54,7 @@ As a prerequisite for EVAM, complete the following steps:
 	    {
 		"Name": "default",
 		"Type": "zmq_tcp",
-		"EndPoint": "ia_edge_video_analytics_microservice:65013",
+		"EndPoint": "ia_edge_video_analytics_microservice:65114",
 		"PublisherAppName": "EdgeVideoAnalyticsMicroservice",
 		"Topics": [
 		    "edge_video_analytics_results"
