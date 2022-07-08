@@ -37,16 +37,45 @@ As a prerequisite for EVAM, complete the following steps:
    >**Note:** The model files are large and hence they are not part of the repo.
 4. Run the following commands to set the environment, build the `ia_configmgr_agent` container and copy models to the required directory:
 
+   a. Go to the `build` directory:
+      ```sh
+      cd [WORK_DIR]/IEdgeInsights/build
+      ```
+   
+   b. Configure visualizer app's subscriber interfaces as below.
+      Example:
+      Add below `interfaces` key value in WebVisualizer/config.json (the same holds true for visualizer apps like Grafana and Visualizer if one intends
+      to see visualization of analyzed results in these apps, the below `interfaces` key value needs to be added to their respective config.json files in their
+      directories):
+   
+      ```json
+      "interfaces": {
+	 "Subscribers": [
+	    {
+		"Name": "default",
+		"Type": "zmq_tcp",
+		"EndPoint": "ia_edge_video_analytics_microservice:65013",
+		"PublisherAppName": "EdgeVideoAnalyticsMicroservice",
+		"Topics": [
+		    "edge_video_analytics_results"
+		]
+	    }
+	 ]
+       }
+      ```
+  
+   c. Execute the builder.py script
    ```sh
-   cd [WORK_DIR]/IEdgeInsights/build
-   
-   # Execute the builder.py script
    python3 builder.py -f usecases/evas.yml
+   ```
    
-   # Create some necessary items for the service
+   d. Create some necessary items for the service
+   ```sh
    sudo mkdir -p /opt/intel/eii/models/
+   ```
    
-   # Copy the downloaded model files to /opt/intel/eii
+   e. Copy the downloaded model files to /opt/intel/eii
+   ```sh
    sudo cp -r [downloaded_model_directory]/models /opt/intel/eii/
    ```
 
@@ -55,8 +84,8 @@ As a prerequisite for EVAM, complete the following steps:
 To pull the prebuilt Open EII container images and EVAM from Docker Hub and run the containers in the detached mode, run the following command:
 
 ```sh
-# Start the docker containers
-docker-compose up -d
+# Launch the EII stack 
+./eii_start.sh
 ```
 
 > **Note:**
